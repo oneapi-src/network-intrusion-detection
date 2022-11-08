@@ -1,0 +1,11 @@
+#Review
+
+name: networkintrusiondetection_stock
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.7
+  - pandas=1.4.2
+  - scikit-learn=1.0.2
+ 
