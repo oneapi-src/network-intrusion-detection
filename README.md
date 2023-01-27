@@ -5,7 +5,7 @@
  - [Purpose](#purpose)
  - [Reference Solution](#reference-solution)
  - [Reference Implementation](#reference-implementation)
- - [Intel Optimized Reference Implementation](#optimizing-the-E2E-solution-with-Intel®-oneAPI)
+ - [Intel Optimized Reference Implementation](#optimized-e2e-architecture-with-intel®-oneapi-components)
  - [Performance Observations](#performance-observations)
 
 ## **Purpose**
@@ -85,76 +85,7 @@ conda env create -f env/stock/networkintrusiondetection_stock.yml
 | `env/stock/networkintrusiondetection_stock.yml`             | `networkintrusiondetection_stock` | Python=3.9.7 with stock Scikit-Learn
 
 For the workload implementation to arrive at the first level solution we will be using the stock environment
-### ***Solution implementation***
 
-#### **Dataset Preprocessing**
-
-To remove the rows with empty values from the downloaded CSV file, the below script has to be run:
-
-```shell
-python src/data_prep.py [-i inputfile] [-o outputfilepath]  
-```
-An example of using the above script is as below:
-```
-conda activate networkintrusiondetection_stock
-python src/data_prep.py -i data/2021.02.17.csv
-```
-
-#### **Model building process**
-
-As mentioned above this Network Intrusion Detection System uses NuSVC from the sci-kit learn library to train an AI model and generate labels by classification for the passed in data.  This process is captured within the `run_benchmarks.py` script. This script *reads and preprocesses the data*, and *performs training, predictions, and hyperparameter tuning analysis on NuSVC*, while also reporting on the execution time for all the mentioned steps(we will use this information later when we are optimizing the implementation for Intel® architecture).  Furthermore, this script can also save each of the intermediate models for an in-depth analysis of the quality of fit.  
-
-The script takes the following arguments:
-
-```shell
-usage: 
-python src/run_benchmarks.py [-d DATASET] [-a algorithm] [-l logfile]
-optional arguments:
-  -l, --logfile,           Log file to output benchmarking results
-
-  -i , --intel,            Use intel accelerated technologies where available
-                        
-  -t , --hp tuning,         If hyperparameter tuning to be done  
-
-  -a , --algo,             Name of the algorithm to be used (svc,nusvc,lr)  
-                      
-  -d , --datasetsize,      Dataset size for training
-
-  -c , --inputcsvpath,     Path to the input csv file
-```                   
-
-As an example of using this, we can run the following commands to train and save NuSVC models. (To run Training with stock python and stock technologies for data size 300K, we would run):
-```shell
-conda activate networkintrusiondetection_stock
-python src/run_benchmarks.py -d 300000 --algo nusvc -c data/data.csv
-```
-In a realistic pipeline, this training process would follow the above diagram, adding a human in the loop to determine the quality of the classification solution from each of the saved models/predictions in the `saved_models` directory, or better, while tuning the model.  The quality of a classification solution is highly dependent on the human analyst and they have the ability to not only tune hyper-parameters but also modify the features being used to find better solutions.
-
-#### **Running classification Analysis/Predictions**
-
-To run the batch and real-time inference with stock, we would run (after creating the appropriate environment as above):
-```shell
-python src/inference.py -m models/NuSVC_model.sav -c data/data.csv -d 10000
-```
-**Hyperparameter tuning**
-
-***Loop Based Hyperparameter Tuning***
-It is used to apply the fit method to train and optimize by applying different parameter values in loops to get the best Silhouette score and thereby a better performing model.
-
-**Parameters Considered**
-| **Parameter** | **Description** | **Values**
-| :-- | :-- | :-- 
-| `kernel` | Kernel | poly,rbf
-| `gamma` | Max iteration value | 1e-4
-
-To run Hyperparameter tuning with stock python and stock technologies, we would run (after creating the appropriate environment as above):
-```shell
-python src/run_benchmarks.py -t 1 -d 300000 --algo nusvc  -c data/data.csv
-```
-To run the batch and real-time inference with the Stock environment, we would run (after creating the appropriate environment as above and using the saved model with Hp tuning with Stock env):
-```shell
-python src/inference.py --modelpath models/NUSVC_model_hp.sav -c data/data.csv -d 10000
-```
 ### ***Optimized E2E architecture with Intel® oneAPI components***
 
 ![Use_case_flow](assets/e2e_flow_optimized.png)
@@ -183,45 +114,16 @@ This script utilizes the dependencies found in the `env/intel/networkintrusionde
 | :---: | :---: | :---: |
 `env/intel/networkintrusiondetection_intel.yml`             | `networkintrusiondetection_intel` | Intel Python=3.9.7 with Intel® Extension for Scikit-learn*  |
 
+## **Jupyter Notebook Demo**
+You can directly access the Jupyter notebook shared in this repo [here](GettingStarted.ipynb).
 
-### ***Optimized Solution implementation***
-
-Optimizing the NuSVC solution with Intel® oneAPI is as simple as adding the following lines of code prior to calling the sklearn algorithms:
-
-```python
-from sklearnex import patch_sklearn
-patch_sklearn()
+To launch your own instance, activate either one of the `stock` or `intel` environments created in this readme and execute the following command.
+```sh
+jupyter notebook
 ```
-#### **Model building process with Intel® optimizations**
 
-The run_benchmarks.py script is run by adding the `--intel` flag when running the training to enable the Intel flag. The same training process can be run, optimized with Intel® oneAPI as the sample code below. To run Training with Intel® python and Intel® technologies for data size 300K, we would run (after creating the appropriate environment as above):
-```shell
-conda activate networkintrusiondetection_intel
-python -m sklearnex src/run_benchmarks.py -i 1 -d 300000 --algo nusvc -c data/data.csv
-```
-To run the batch and real-time inference with Intel environment, we would run (after creating the appropriate environment as above and using the saved model trained with Intel env):
-```shell
-python -m sklearnex src/inference.py --i 1 --modelpath models/NuSVC_model.sav -c data/data.csv -d 10000
-```
-**Hyperparameter tuning**
+Open `GettingStarted.ipynb` and follow the instructions there to perform training and inference on both the Stock and Intel optimized solutions.
 
-***Loop Based Hyperparameter Tuning***
-It is used to apply the fit method to train and optimize by applying different parameter values in loops to get the best Silhouette score and thereby a better performing model.
-
-**Parameters Considered**
-| **Parameter** | **Description** | **Values**
-| :-- | :-- | :-- 
-| `kernel` | kernels | rbf,poly
-| `gamma` | Gamma Value | 1e-4
-
-To run Hyperparameter tuning with intel python and Intel technologies, we would run (after creating the appropriate environment as above):
-```shell
-python -m sklearnex src/run_benchmarks.py -i 1 -t 1 -d 300000 --algo nusvc -c data/data.csv
-```
-To run the batch and real-time inference with Intel environment, we would run (after creating the appropriate environment as above and using the saved model with hyperparameter tuning with Intel env):
-```shell
-python -m sklearnex src/inference.py --i 1 --modelpath models/NUSVC_model_hp.sav -c data/data.csv -d 10000
-```
 ### **Performance Observations**
 
 We investigate the amount of time taken to perform hyper-parameter analysis under a combination of gamma (1e-4) and kernels (rbf, poly).

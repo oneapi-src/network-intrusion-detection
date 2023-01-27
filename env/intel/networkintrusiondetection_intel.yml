@@ -11,6 +11,9 @@ dependencies:
   - pip=21.2.4
   - python=3.9.7
   - scikit-learn-intelex=2021.6.0
+  - matplotlib==3.5.3
+  - tqdm
+  - ipykernel
   - pip:
     - ipython==8.5.0
     - pandas==1.4.2
