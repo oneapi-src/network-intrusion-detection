@@ -1,3 +1,1 @@
-Download 2021.02.17.csv file from URL :https://www.kaggle.com/datasets/mryanm/luflow-network-intrusion-detection-data-set
-Save to data folder.
-Run the data_prep.py file as mentioned in the developer documentation to remove the empty cells from the csv file.
+Please follow the "Download the Dataset" and "Dataset Preprocessing" sections mentioned in README file to get the dataset ready.

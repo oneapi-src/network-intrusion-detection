@@ -1,0 +1,8 @@
+name: intrusion_detection_intel
+channels:
+  - intel
+  - conda-forge
+dependencies:
+  - intelpython3_full=2024.0.0
+  - python=3.10
+  - pandas=2.1.3
